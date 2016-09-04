@@ -1,11 +1,15 @@
 {
-  "scripts":{
-    "app": "node app/server.js"
+  "scripts": {
+    "app": "node app/server.js",
+    "app-final": "node app-final/server.js"
   },
   "dependencies": {
     "body-parser": "1.15.2",
     "express": "4.14.0",
+    "express-graphql": "0.5.4",
+    "graphql": "0.7.0",
     "mongodb": "2.2.9",
+    "node-fetch": "1.6.0",
     "path": "0.12.7"
   }
 }

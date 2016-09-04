@@ -1,5 +1,6 @@
 # graphql-workshop
 
+Install these three packages using npm
 ```javascript
 npm install --save express path body-parser mongodb
 ```
@@ -17,3 +18,9 @@ npm install --save express path body-parser mongodb
 | GET      | /pets/:id     | find pet by id         |
 | PUT      | /pets/:id     | update pet by id       |
 | DELETE   | /pets/:id     | delete pet by id       |
+
+
+Install these three packages using npm
+```javascript
+npm install --save graphql express-graphql node-fetch
+```

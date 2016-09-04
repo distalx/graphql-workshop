@@ -2,13 +2,132 @@ var express = require("express");
 var path = require("path");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
+var fetch = require('node-fetch');
 
+var graphql = require('graphql');
+var graphqlHTTP = require('express-graphql');
 
 var OWNERS = "owners";
 var PETS = "pets";
 
 var app = express();
 app.use(bodyParser.json());
+
+//GraphQL
+var petType = new graphql.GraphQLObjectType({
+  name: 'Pet',
+  description: '....',
+  fields: {
+    _id: { type: graphql.GraphQLString },
+    name: { type: graphql.GraphQLString },
+    type: { type: graphql.GraphQLString }
+  }
+});
+
+var ownerType = new graphql.GraphQLObjectType({
+  name: 'Owner',
+  description: '....',
+  fields: {
+    _id: { type: graphql.GraphQLString },
+    name: { type: graphql.GraphQLString },
+    pet_id: { type: graphql.GraphQLString },
+    pets: {
+      type: new graphql.GraphQLList(petType),
+      resolve: function (owner) {
+
+        return fetch('http://localhost:3000/pets/'+ owner.pet_id)
+                .then(function(res) {
+                    return res.json();
+                }).then(function(pets) {
+                    return [pets];
+                });
+
+      }
+    }
+  }
+
+});
+
+
+var RootType = new graphql.GraphQLObjectType({
+  name: 'Query',
+  description: '....',
+
+  fields: {
+    owners: {
+      type: new graphql.GraphQLList(ownerType),
+      resolve: function () {
+
+        return fetch('http://localhost:3000/owners/')
+                .then(function(res) {
+                    return res.json();
+                }).then(function(owners) {
+                    return owners;
+                });
+
+      }
+    },
+    pets: {
+      type: new graphql.GraphQLList(petType),
+      resolve: function () {
+
+        return fetch('http://localhost:3000/pets/')
+                .then(function(res) {
+                    return res.json();
+                }).then(function(pets) {
+                    return pets;
+                });
+
+      }
+    },
+    owner: {
+      type: ownerType,
+
+      args: {
+        id: { type: graphql.GraphQLString }
+      },
+
+      resolve: function (_, args) {
+
+        return fetch('http://localhost:3000/owners/'+ args.id)
+                .then(function(res) {
+                    return res.json();
+                }).then(function(owner) {
+                    return owner;
+                });
+
+      }
+    },
+    pet: {
+      type: new graphql.GraphQLList(petType),
+
+      args: {
+        type: { type: graphql.GraphQLString }
+      },
+
+      resolve: function (_, args) {
+
+        return fetch('http://localhost:3000/pets/type/'+ args.type)
+                .then(function(res) {
+                    return res.json();
+                }).then(function(pets) {
+                    return pets;
+                });
+
+      }
+    }
+  }
+});
+
+var schema = new graphql.GraphQLSchema({
+  query: RootType
+});
+
+
+
+
+app.use('/graphql', graphqlHTTP({ schema: schema, pretty: true, graphiql: true }));
+
 
 var db;
 
